@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nugget's Unit Conversion Pairs</title>
+    <style>
+        :root {
+            /* Theme Colors - Maroon/Red for Unit Conversion */
+            --primary-color: #c0392b; 
+            --secondary-color: #e74c3c;
+            --bg-color: #fce4ec;
+            --card-back-bg: #dfe6e9;
+            --text-color: #2d3436;
+            --p1-color: #0984e3;
+            --p2-color: #d63031;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+
+        /* --- Layout --- */
+        header, #nugget-area, #start-screen, #game-controls, #cert-buttons-container {
+            box-sizing: border-box;
+        }
+
+        header { text-align: center; padding: 20px; }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 95%;
+            max-width: 1200px;
+            position: relative;
+            padding-bottom: 50px;
+        }
+
+        /* --- Nugget Area --- */
+        #nugget-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        #nugget-top-img {
+            width: 150px;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+        #nugget-top-img:hover { transform: scale(1.05) rotate(5deg); }
+
+        .speech-bubble {
+            background: white;
+            border-radius: 20px;
+            padding: 15px 25px;
+            margin-left: 20px;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            font-size: 1.1em;
+            border: 2px solid var(--primary-color);
+        }
+        .speech-bubble:after {
+            content: ''; position: absolute; left: 0; top: 50%; width: 0; height: 0;
+            border: 15px solid transparent; border-right-color: var(--primary-color);
+            border-left: 0; margin-top: -15px; margin-left: -15px;
+        }
+
+        /* --- Start Screen & Settings --- */
+        #start-screen {
+            display: flex; flex-direction: column; align-items: center; gap: 15px;
+            background: white; padding: 30px; border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .skills-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+            width: 100%;
+            text-align: left;
+        }
+        .skills-grid label {
+            display: flex; align-items: center;
+            background: #eee; padding: 12px; border-radius: 8px; cursor: pointer;
+            font-weight: 500;
+        }
+        .skills-grid input { margin-right: 10px; transform: scale(1.2); }
+        .skills-grid label:hover { background: #e0e0e0; }
+
+        .mode-selection {
+            display: flex; flex-direction: column; gap: 10px; width: 100%;
+        }
+
+        .input-group {
+            display: flex; flex-direction: column; gap: 5px; text-align: left; width: 80%; margin: 10px auto;
+        }
+        .input-group label { font-weight: bold; font-size: 0.9rem; }
+        .input-group input { padding: 10px; font-size: 1rem; border: 2px solid #ccc; border-radius: 5px; }
+
+        .btn {
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 12px 25px; margin: 5px; border-radius: 8px; font-size: 1.1rem;
+            cursor: pointer; transition: background 0.2s; min-width: 200px;
+        }
+        .btn:hover { filter: brightness(90%); }
+        .btn.secondary { background-color: #636e72; color: white; }
+        .btn.outline { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
+        .btn.outline:hover { background: #ffeaa7; }
+        .btn-small { padding: 5px 10px; font-size: 0.9rem; min-width: auto; }
+        
+        .btn-group-label { font-weight: bold; margin-top: 10px; display: block; font-size: 1.2rem; }
+
+        .hidden { display: none !important; }
+
+        /* --- In-Game Controls --- */
+        #game-controls {
+            display: flex; flex-direction: column; align-items: center;
+            margin-bottom: 20px; gap: 15px; width: 100%;
+        }
+        
+        /* Scoreboard for 2 Player */
+        #scoreboard {
+            display: flex; gap: 20px;
+            background: white; padding: 10px 20px; border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .score-box {
+            padding: 10px 20px; border-radius: 10px; text-align: center; min-width: 100px;
+            border: 2px solid transparent; transition: all 0.3s;
+        }
+        .score-box.active { transform: scale(1.05); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .p1-box { color: var(--p1-color); }
+        .p1-box.active { background-color: var(--p1-color); color: white; border-color: var(--p1-color); }
+        .p2-box { color: var(--p2-color); }
+        .p2-box.active { background-color: var(--p2-color); color: white; border-color: var(--p2-color); }
+        
+        .score-val { font-size: 2rem; font-weight: bold; display: block; }
+        .score-name { font-size: 0.9rem; font-weight: bold; text-transform: uppercase; }
+
+        /* Single Player Stats */
+        #stats-bar {
+            background: var(--primary-color); color: white; padding: 10px 20px;
+            border-radius: 20px; font-weight: bold; font-size: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* --- Game Board --- */
+        #board {
+            display: grid; 
+            /* 6 columns x 4 rows = 24 cards */
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 12px;
+            perspective: 1000px; margin-bottom: 40px;
+            max-width: 1000px;
+        }
+        @media (max-width: 900px) { #board { grid-template-columns: repeat(4, 1fr); } } /* 4x6 */
+        @media (max-width: 500px) { #board { grid-template-columns: repeat(3, 1fr); } } /* 3x8 */
+
+        .card {
+            background-color: transparent; width: 120px; height: 120px; 
+            cursor: pointer; position: relative; transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        .card.flipped { transform: rotateY(180deg); }
+        .card.matched { visibility: hidden; opacity: 0; transition: visibility 0s 0.5s, opacity 0.5s linear; cursor: default; }
+
+        .card-face {
+            position: absolute; width: 100%; height: 100%;
+            -webkit-backface-visibility: hidden; backface-visibility: hidden;
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #ddd;
+        }
+        .card-front { background-color: white; transform: rotateY(180deg); color: #2d3436; overflow: hidden; padding: 5px; box-sizing: border-box; }
+        .open-mode .card-front { transform: rotateY(0deg); }
+        .open-mode .card-back { display: none; }
+        .card.selected .card-front { border: 4px solid var(--primary-color); background-color: #fab1a0; }
+        .card-back { background-color: var(--secondary-color); transform: rotateY(0deg); }
+        .card-back img { width: 80%; height: auto; opacity: 0.9; }
+
+        /* --- Card Content --- */
+        .card-content { 
+            font-family: 'Segoe UI', 'Arial Narrow', sans-serif;
+            font-size: 1.25rem; 
+            font-weight: bold; 
+            text-align: center; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            line-height: 1.2;
+        }
+
+        sup { font-size: 0.6em; vertical-align: baseline; position: relative; top: -0.4em; }
+
+        /* --- Modal & Certificate --- */
+        #modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 15px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 400px; width: 90%;
+            border: 4px solid var(--primary-color);
+        }
+        
+        #certificate-view {
+            text-align: center; background: white; padding: 40px;
+            border: 10px double var(--primary-color); border-radius: 15px;
+            max-width: 700px; width: 100%; box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto;
+        }
+        .cert-title { font-family: 'Times New Roman', serif; font-size: 3rem; color: var(--primary-color); margin-bottom: 10px; }
+        .cert-body { font-size: 1.3rem; margin: 30px 0; line-height: 1.6; }
+        .cert-name-display {
+            font-family: 'Brush Script MT', cursive; font-size: 3rem; color: #2d3436;
+            border-bottom: 2px solid #2d3436; padding: 0 20px; display: inline-block; margin-bottom: 10px;
+        }
+        .cert-signature-area {
+            display: flex; align-items: center; justify-content: center; gap: 30px; margin-top: 40px;
+        }
+        .cert-nugget-stamp { width: 100px; height: auto; transform: rotate(-10deg); opacity: 0.9; }
+        .paw-print { color: var(--primary-color); font-size: 3rem; transform: rotate(-15deg); }
+        .cert-meta { font-size: 0.9rem; color: #636e72; margin-top: 30px; border-top: 1px solid #dfe6e9; padding-top: 10px; }
+        .cert-skills-list { display: block; margin-top: 10px; font-weight: bold; color: var(--primary-color); font-size: 0.9em; }
+
+        /* --- PRINT STYLES --- */
+        #print-layout { display: none; }
+
+        @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            html, body { margin: 0; padding: 0; width: 100%; background: white; }
+            header, #nugget-area, #start-screen, #game-controls, #board, #modal-overlay, #cert-buttons-container { display: none !important; }
+            #game-container { display: block; width: 100%; max-width: none; margin: 0; }
+            
+            #certificate-view:not(.hidden) {
+                display: block !important; position: absolute; left: 0; top: 0; width: 100%;
+                border: 5px solid var(--primary-color);
+            }
+
+            #print-layout.visible-print {
+                display: block !important; position: absolute; top: 0; left: 0; width: 100%;
+            }
+            .print-page {
+                display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(6, 1fr);
+                gap: 10px; width: 100%; height: 98vh; page-break-after: always; padding: 20px; box-sizing: border-box;
+            }
+            .print-card {
+                display: flex; align-items: center; justify-content: center;
+                height: 100%; width: 100%; border: 1px dashed #ccc;
+            }
+            .print-card .card-face {
+                position: relative; transform: none; box-shadow: none;
+                border: 2px solid #333; width: 90%; height: 90%;
+            }
+            .print-card .card-back { background-color: var(--secondary-color) !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="no-print">
+        <h1>Nugget's Unit Conversion Pairs</h1>
+    </header>
+
+    <div id="game-container">
+        
+        <div id="nugget-area" class="no-print">
+            <img src="Nugget.png" alt="Nugget" id="nugget-top-img" onerror="this.src='https://api.dicebear.com/7.x/thumbs/svg?seed=Nugget&backgroundColor=e74c3c'">
+            <div class="speech-bubble" id="nugget-speech">
+                Hi! Select the skills you want to practise!
+            </div>
+        </div>
+
+        <div id="start-screen" class="no-print">
+            
+            <div id="phase-skills" style="width:100%">
+                <span class="btn-group-label">Step 1: Select Skills</span>
+                <div style="margin-top:5px; margin-bottom: 10px;">
+                    <button class="btn btn-small secondary" onclick="toggleAllSkills(true)">Select All</button>
+                    <button class="btn btn-small secondary" onclick="toggleAllSkills(false)">Clear</button>
+                </div>
+                
+                <div class="skills-grid" id="skills-container">
+                    <label><input type="checkbox" value="length" checked> Length (km, m, cm, mm)</label>
+                    <label><input type="checkbox" value="mass" checked> Mass (t, kg, g, mg)</label>
+                    <label><input type="checkbox" value="time" checked> Time (Years, Days, Hours, etc)</label>
+                    <label><input type="checkbox" value="area" checked> Area (km², ha, m², cm², mm²)</label>
+                    <label><input type="checkbox" value="volume" checked> Volume (m³, L, mL, cm³)</label>
+                    <label><input type="checkbox" value="complex" checked> Complex Units (Speed, Density, Flow)</label>
+                </div>
+
+                <button class="btn" onclick="goToModeSelection()">Next</button>
+            </div>
+
+            <div id="phase-mode" class="mode-selection hidden">
+                <span class="btn-group-label">Step 2: Choose Game Mode</span>
+                <button class="btn" onclick="setupPhase('solo-open')">Single Player (Face Up)</button>
+                <button class="btn" onclick="setupPhase('solo-memory')">Single Player (Memory)</button>
+                <button class="btn secondary" onclick="setupPhase('multi-memory')">Two Player (Shared Device)</button>
+                <div style="height: 10px;"></div>
+                <button class="btn outline" onclick="printCardSet()">Teacher: Print Card Set</button>
+                <button class="btn outline" onclick="backToSkills()">Back</button>
+            </div>
+
+            <div id="phase-names" class="hidden">
+                <span class="btn-group-label" id="name-prompt-text">Enter Name</span>
+                
+                <div id="p1-input" class="input-group">
+                    <label>Player 1 Name:</label>
+                    <input type="text" id="input-p1-name" placeholder="Player 1" maxlength="15">
+                </div>
+
+                <div id="p2-input" class="input-group hidden">
+                    <label>Player 2 Name:</label>
+                    <input type="text" id="input-p2-name" placeholder="Player 2" maxlength="15">
+                </div>
+
+                <br>
+                <button class="btn" onclick="startGame()">Start Game</button>
+                <button class="btn outline" onclick="backToModes()">Back</button>
+            </div>
+
+        </div>
+
+        <div id="game-controls" class="hidden no-print">
+            
+            <div id="stats-bar" class="hidden">
+                <span id="stats-text">Attempts: 0</span>
+            </div>
+
+            <div id="scoreboard" class="hidden">
+                <div id="p1-score-box" class="score-box p1-box active">
+                    <span class="score-name" id="disp-p1-name">P1</span>
+                    <span class="score-val" id="score-p1">0</span>
+                </div>
+                <div id="p2-score-box" class="score-box p2-box">
+                    <span class="score-name" id="disp-p2-name">P2</span>
+                    <span class="score-val" id="score-p2">0</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="board" class="hidden no-print"></div>
+
+        <div id="modal-overlay" class="hidden no-print">
+            <div class="modal-content">
+                <h2>Well Done!</h2>
+                <p id="winner-text">You matched all the pairs!</p>
+                <button class="btn" onclick="claimCertificate()">View Certificate</button>
+            </div>
+        </div>
+
+        <div id="certificate-view" class="hidden">
+            <div class="cert-title">Certificate of Achievement</div>
+            <div class="cert-body">
+                This certifies that<br><br>
+                <div class="cert-name-display" id="final-cert-name">Student Name</div>
+                <br><br>
+                <span id="cert-action-text">has successfully completed</span><br>
+                <strong>Nugget's Unit Conversion Pairs</strong><br>
+                <span id="cert-details" style="font-size: 0.9em; font-style: italic;">(Game Stats)</span><br>
+                <span class="cert-skills-list" id="cert-skills">Skills: </span>
+            </div>
+            
+            <div class="cert-signature-area">
+                <img src="Nugget.png" alt="Nugget Stamp" class="cert-nugget-stamp" onerror="this.style.display='none'">
+                <div>
+                    <div class="paw-print">🐾</div>
+                    <div style="font-family: cursive; margin-top: 5px;">Nugget Approved!</div>
+                </div>
+            </div>
+
+            <div class="cert-meta">
+                Date: <span id="cert-date"></span>
+            </div>
+        </div>
+
+        <div id="cert-buttons-container" class="hidden no-print" style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn" onclick="location.reload()">Play Again</button>
+            <button class="btn secondary" onclick="window.print()">Print Certificate</button>
+        </div>
+
+    </div>
+
+    <div id="print-layout"></div>
+
+<script>
+    // --- Global State ---
+    let gameState = {
+        mode: null,
+        p1Name: "Player 1",
+        p2Name: "Player 2",
+        scores: { p1: 0, p2: 0 },
+        currentPlayer: 'p1',
+        attempts: 0,
+        matchesFound: 0,
+        isProcessing: false,
+        totalPairs: 12,
+        startTime: null,
+        endTime: null
+    };
+
+    let selectedCards = [];
+
+    // --- Helpers ---
+    function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    // Number formatter: adds commas to large numbers (e.g. 10,000)
+    function fmtNum(n) {
+        return n.toLocaleString('en-US');
+    }
+
+    function toggleAllSkills(state) {
+        document.querySelectorAll('#skills-container input').forEach(cb => cb.checked = state);
+    }
+
+    function getSelectedSkills() {
+        const checkboxes = document.querySelectorAll('#skills-container input:checked');
+        return Array.from(checkboxes).map(cb => cb.value);
+    }
+    
+    function getSkillDisplayName(code) {
+        const map = {
+            'length': 'Length',
+            'mass': 'Mass',
+            'time': 'Time',
+            'area': 'Area',
+            'volume': 'Volume',
+            'complex': 'Complex Units'
+        };
+        return map[code] || code;
+    }
+
+    // --- Unit Generators ---
+
+    // 1. Length: km, m, cm, mm
+    function genLength() {
+        // Pairs: km-m, m-cm, cm-mm, m-mm
+        const type = getRandomInt(1, 4);
+        let val, u1, u2;
+        
+        switch(type) {
+            case 1: // km -> m (x1000)
+                val = getRandomInt(1, 20) / 2; // 0.5 to 10
+                u1 = "km"; u2 = "m";
+                return { q: `${val} km`, a: `${fmtNum(val * 1000)} m` };
+            case 2: // m -> cm (x100)
+                val = getRandomInt(1, 100) / 10; // 0.1 to 10
+                u1 = "m"; u2 = "cm";
+                return { q: `${val} m`, a: `${fmtNum(val * 100)} cm` };
+            case 3: // cm -> mm (x10)
+                val = getRandomInt(1, 50);
+                u1 = "cm"; u2 = "mm";
+                return { q: `${val} cm`, a: `${val * 10} mm` };
+            case 4: // m -> mm (x1000)
+                val = getRandomInt(1, 5);
+                u1 = "m"; u2 = "mm";
+                return { q: `${val} m`, a: `${fmtNum(val * 1000)} mm` };
+        }
+    }
+
+    // 2. Mass: t, kg, g, mg
+    function genMass() {
+        const type = getRandomInt(1, 3);
+        let val;
+        
+        switch(type) {
+            case 1: // t -> kg
+                val = getRandomInt(1, 20) / 2;
+                return { q: `${val} t`, a: `${fmtNum(val * 1000)} kg` };
+            case 2: // kg -> g
+                val = getRandomInt(1, 10) / 10; // 0.1 to 1.0
+                return { q: `${val} kg`, a: `${fmtNum(val * 1000)} g` };
+            case 3: // g -> mg
+                val = getRandomInt(1, 50) / 10;
+                return { q: `${val} g`, a: `${fmtNum(val * 1000)} mg` };
+        }
+    }
+
+    // 3. Time
+    function genTime() {
+        const type = getRandomInt(1, 6);
+        let val;
+        
+        switch(type) {
+            case 1: // Years -> Months (x12)
+                val = getRandomInt(2, 5);
+                return { q: `${val} years`, a: `${val * 12} months` };
+            case 2: // Weeks -> Days (x7)
+                val = getRandomInt(2, 12);
+                return { q: `${val} weeks`, a: `${val * 7} days` };
+            case 3: // Days -> Hours (x24)
+                val = getRandomInt(2, 5);
+                return { q: `${val} days`, a: `${val * 24} hours` };
+            case 4: // Hours -> Minutes (x60)
+                val = getRandomInt(1, 5);
+                return { q: `${val} hours`, a: `${val * 60} minutes` };
+            case 5: // Minutes -> Seconds (x60)
+                val = getRandomInt(2, 10);
+                return { q: `${val} minutes`, a: `${val * 60} seconds` };
+            case 6: // Years -> Weeks (approx 52)
+                // Specific cases to avoid ambiguity
+                return { q: "2 years", a: "104 weeks" }; // Simpler for kids
+        }
+        // Fallback
+        return { q: "1 year", a: "12 months" };
+    }
+
+    // 4. Area: km2, ha, m2, cm2, mm2
+    function genArea() {
+        const type = getRandomInt(1, 3);
+        let val;
+        
+        switch(type) {
+            case 1: // km2 -> ha (x100) or m2 (x1000000)
+                val = getRandomInt(1, 10);
+                // 1 km2 = 100 hectares
+                return { q: `${val} km<sup>2</sup>`, a: `${val * 100} hectares` };
+            case 2: // m2 -> cm2 (x10000)
+                val = getRandomInt(1, 5);
+                return { q: `${val} m<sup>2</sup>`, a: `${fmtNum(val * 10000)} cm<sup>2</sup>` };
+            case 3: // cm2 -> mm2 (x100)
+                val = getRandomInt(1, 20);
+                return { q: `${val} cm<sup>2</sup>`, a: `${fmtNum(val * 100)} mm<sup>2</sup>` };
+        }
+    }
+
+    // 5. Volume: m3, cm3, L, mL
+    function genVolume() {
+        const type = getRandomInt(1, 4);
+        let val;
+        
+        switch(type) {
+            case 1: // L -> mL (x1000)
+                val = getRandomInt(1, 50) / 10;
+                return { q: `${val} litres`, a: `${fmtNum(val * 1000)} mL` };
+            case 2: // m3 -> L (x1000)
+                val = getRandomInt(1, 10);
+                return { q: `${val} m<sup>3</sup>`, a: `${fmtNum(val * 1000)} litres` };
+            case 3: // cm3 -> mL (1:1) - kinda easy, but valid
+                val = getRandomInt(50, 500);
+                return { q: `${val} cm<sup>3</sup>`, a: `${val} mL` };
+            case 4: // L -> cm3 (x1000)
+                val = getRandomInt(1, 5);
+                return { q: `${val} litres`, a: `${fmtNum(val * 1000)} cm<sup>3</sup>` };
+        }
+    }
+
+    // 6. Complex Units
+    function genComplex() {
+        const type = getRandomInt(1, 4);
+        let val, res;
+        
+        switch(type) {
+            case 1: // m/s -> km/h (x3.6)
+                // Pick multiples of 5 or 10 for clean numbers
+                val = getRandomInt(1, 10) * 5; 
+                res = val * 3.6; 
+                return { q: `${val} m/s`, a: `${res} km/h` };
+            
+            case 2: // km/h -> m/s (/3.6)
+                // Pick multiples of 3.6 to get integers? 36, 72, 18, 90, 108
+                const bases = [18, 36, 54, 72, 90, 108];
+                val = bases[getRandomInt(0, bases.length-1)];
+                res = val / 3.6;
+                return { q: `${val} km/h`, a: `${res} m/s` };
+                
+            case 3: // Density: g/cm3 -> kg/m3 (x1000)
+                val = getRandomInt(1, 10);
+                return { q: `${val} g/cm<sup>3</sup>`, a: `${fmtNum(val * 1000)} kg/m<sup>3</sup>` };
+                
+            case 4: // Flow: L/s -> m3/h
+                // 1 L/s = 3.6 m3/h
+                val = getRandomInt(1, 10);
+                res = val * 3.6; // Clean decimal usually
+                // Use formatted output
+                let sRes = parseFloat(res.toPrecision(10));
+                return { q: `${val} litres/s`, a: `${sRes} m<sup>3</sup>/hour` };
+        }
+    }
+
+
+    // --- Core Logic ---
+    function generateDeckData() {
+        const skills = getSelectedSkills();
+        let deck = [];
+        // STRICT UNIQUENESS: Track every visual face string generated so far.
+        let usedCardFaces = new Set();
+        let safetyCounter = 0;
+        
+        while(deck.length < 24 && safetyCounter < 5000) {
+            safetyCounter++;
+            const skill = skills[getRandomInt(0, skills.length-1)];
+            let data = null;
+
+            // Generate Pair
+            if (skill === 'length') data = genLength();
+            else if (skill === 'mass') data = genMass();
+            else if (skill === 'time') data = genTime();
+            else if (skill === 'area') data = genArea();
+            else if (skill === 'volume') data = genVolume();
+            else if (skill === 'complex') data = genComplex();
+
+            if (data) {
+                // Check if faces visually exist already
+                if (usedCardFaces.has(data.q) || usedCardFaces.has(data.a)) {
+                    continue; 
+                }
+                // Check for self-matching (e.g. 1 mL = 1 mL)
+                if (data.q === data.a) continue;
+
+                // Register faces
+                usedCardFaces.add(data.q);
+                usedCardFaces.add(data.a);
+                
+                const id = (deck.length/2) + 1;
+                deck.push({ id: id, type: 'q', val: data.q, pairId: id });
+                deck.push({ id: id, type: 'a', val: data.a, pairId: id });
+            }
+        }
+        
+        return deck;
+    }
+
+    // --- Navigation Logic ---
+    function goToModeSelection() {
+        const selected = getSelectedSkills();
+        if (selected.length === 0) {
+            alert("Please select at least one skill!");
+            return;
+        }
+        document.getElementById('nugget-speech').innerText = "How would you like to play?";
+        document.getElementById('phase-skills').classList.add('hidden');
+        document.getElementById('phase-mode').classList.remove('hidden');
+    }
+
+    function backToSkills() {
+        document.getElementById('nugget-speech').innerText = "Hi! Select the skills you want to practise!";
+        document.getElementById('phase-mode').classList.add('hidden');
+        document.getElementById('phase-skills').classList.remove('hidden');
+    }
+
+    function setupPhase(mode) {
+        gameState.mode = mode;
+        document.getElementById('phase-mode').classList.add('hidden');
+        document.getElementById('phase-names').classList.remove('hidden');
+
+        if (mode === 'multi-memory') {
+            document.getElementById('name-prompt-text').innerText = "Enter Player Names";
+            document.getElementById('p2-input').classList.remove('hidden');
+            document.getElementById('input-p1-name').placeholder = "Player 1";
+            document.getElementById('input-p2-name').placeholder = "Player 2";
+        } else {
+            document.getElementById('name-prompt-text').innerText = "Enter Name";
+            document.getElementById('p2-input').classList.add('hidden');
+            document.getElementById('input-p1-name').placeholder = "Player 1";
+        }
+    }
+
+    function backToModes() {
+        document.getElementById('phase-names').classList.add('hidden');
+        document.getElementById('phase-mode').classList.remove('hidden');
+    }
+
+    // --- Game Engine ---
+    function startGame() {
+        gameState.p1Name = document.getElementById('input-p1-name').value.trim() || "Player 1";
+        gameState.p2Name = document.getElementById('input-p2-name').value.trim() || "Player 2";
+        gameState.scores = { p1: 0, p2: 0 };
+        gameState.currentPlayer = 'p1';
+        gameState.attempts = 0;
+        gameState.matchesFound = 0;
+        selectedCards = [];
+        gameState.isProcessing = false;
+        gameState.startTime = new Date();
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-controls').classList.remove('hidden');
+        document.getElementById('board').classList.remove('hidden');
+
+        if (gameState.mode === 'multi-memory') {
+            document.getElementById('scoreboard').classList.remove('hidden');
+            document.getElementById('disp-p1-name').innerText = gameState.p1Name;
+            document.getElementById('disp-p2-name').innerText = gameState.p2Name;
+            updateTurnIndicator();
+        } else if (gameState.mode === 'solo-memory') {
+            document.getElementById('stats-bar').classList.remove('hidden');
+            document.getElementById('nugget-speech').innerText = "Find the matching pairs!";
+        } else {
+            document.getElementById('board').classList.add('open-mode');
+            document.getElementById('nugget-speech').innerText = "Match them up as fast as you can!";
+        }
+
+        const deckData = generateDeckData().sort(() => 0.5 - Math.random());
+        const board = document.getElementById('board');
+        board.innerHTML = '';
+        deckData.forEach(data => board.appendChild(createCard(data)));
+    }
+
+    function updateTurnIndicator() {
+        document.getElementById('score-p1').innerText = gameState.scores.p1;
+        document.getElementById('score-p2').innerText = gameState.scores.p2;
+        
+        const p1Box = document.getElementById('p1-score-box');
+        const p2Box = document.getElementById('p2-score-box');
+        
+        if (gameState.currentPlayer === 'p1') {
+            p1Box.classList.add('active'); p2Box.classList.remove('active');
+            document.getElementById('nugget-speech').innerText = `${gameState.p1Name}'s Turn`;
+        } else {
+            p1Box.classList.remove('active'); p2Box.classList.add('active');
+            document.getElementById('nugget-speech').innerText = `${gameState.p2Name}'s Turn`;
+        }
+    }
+
+    function createCard(data) {
+        const card = document.createElement('div'); 
+        card.className = 'card'; 
+        card.dataset.pairId = data.pairId;
+
+        const front = document.createElement('div'); front.className = 'card-face card-front';
+        front.innerHTML = `<div class="card-content">${data.val}</div>`;
+        
+        const back = document.createElement('div'); back.className = 'card-face card-back';
+        back.innerHTML = `<img src="Nugget.png" onerror="this.src='https://api.dicebear.com/7.x/thumbs/svg?seed=Nugget&backgroundColor=e74c3c'">`;
+        
+        card.appendChild(front); 
+        card.appendChild(back);
+        
+        card.addEventListener('click', () => handleCardClick(card));
+        return card;
+    }
+
+    function handleCardClick(card) {
+        if (gameState.isProcessing || card.classList.contains('matched')) return;
+
+        // FIX: Handle Open Mode Deselection
+        if (gameState.mode === 'solo-open') {
+            if (card.classList.contains('selected')) {
+                // Deselect behavior
+                card.classList.remove('selected');
+                selectedCards = []; // Clear selection
+                return;
+            }
+        } else {
+            // Memory modes: ignore if already flipped
+            if (card.classList.contains('flipped')) return;
+        }
+
+        // Selection Logic
+        if (gameState.mode !== 'solo-open') {
+            card.classList.add('flipped');
+        } else {
+            card.classList.add('selected'); 
+        }
+        
+        selectedCards.push(card);
+
+        if (selectedCards.length === 2) {
+            gameState.isProcessing = true;
+            gameState.attempts++;
+            if (gameState.mode === 'solo-memory') updateStats();
+
+            const [c1, c2] = selectedCards;
+            const match = c1.dataset.pairId === c2.dataset.pairId;
+
+            if (match) {
+                handleMatch(c1, c2);
+            } else {
+                handleMiss(c1, c2);
+            }
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('stats-text').innerText = `Attempts: ${gameState.attempts}`;
+    }
+
+    function handleMatch(c1, c2) {
+        setTimeout(() => {
+            c1.classList.add('matched');
+            c2.classList.add('matched');
+            c1.classList.remove('selected'); 
+            c2.classList.remove('selected');
+            
+            gameState.matchesFound++;
+            selectedCards = [];
+            gameState.isProcessing = false;
+
+            if (gameState.mode === 'multi-memory') {
+                gameState.scores[gameState.currentPlayer]++;
+                document.getElementById('nugget-speech').innerText = "Match! Go again!";
+                updateTurnIndicator(); 
+            } else {
+                 document.getElementById('nugget-speech').innerText = "Good job!";
+            }
+
+            if (gameState.matchesFound === gameState.totalPairs) {
+                endGame();
+            }
+
+        }, 500);
+    }
+
+    function handleMiss(c1, c2) {
+        setTimeout(() => {
+            if (gameState.mode === 'solo-open') {
+                c1.classList.remove('selected');
+                c2.classList.remove('selected');
+                document.getElementById('nugget-speech').innerText = "Try again.";
+            } else {
+                c1.classList.add('shaking'); c2.classList.add('shaking');
+                setTimeout(() => {
+                   c1.classList.remove('flipped', 'shaking');
+                   c2.classList.remove('flipped', 'shaking');
+                }, 500);
+            }
+            
+            selectedCards = [];
+            
+            if (gameState.mode === 'multi-memory') {
+                setTimeout(() => {
+                    gameState.currentPlayer = (gameState.currentPlayer === 'p1') ? 'p2' : 'p1';
+                    updateTurnIndicator();
+                    gameState.isProcessing = false;
+                }, 600);
+            } else {
+                gameState.isProcessing = false;
+            }
+        }, 1000);
+    }
+
+    function endGame() {
+        gameState.endTime = new Date();
+        const modal = document.getElementById('modal-overlay');
+        const txt = document.getElementById('winner-text');
+        
+        if (gameState.mode === 'multi-memory') {
+            if (gameState.scores.p1 > gameState.scores.p2) {
+                txt.innerText = `${gameState.p1Name} Wins!`;
+            } else if (gameState.scores.p2 > gameState.scores.p1) {
+                txt.innerText = `${gameState.p2Name} Wins!`;
+            } else {
+                txt.innerText = "It's a Tie!";
+            }
+        } else {
+            txt.innerText = "All pairs found!";
+        }
+        
+        modal.classList.remove('hidden');
+    }
+
+    function claimCertificate() {
+        let name = gameState.p1Name;
+        let actionText = "has successfully completed";
+        let detailText = "";
+        
+        if (gameState.mode === 'multi-memory') {
+            actionText = "won the game of";
+            if (gameState.scores.p2 > gameState.scores.p1) name = gameState.p2Name;
+            if (gameState.scores.p1 === gameState.scores.p2) {
+                name = `${gameState.p1Name} & ${gameState.p2Name}`;
+                actionText = "tied the game of";
+            }
+        } 
+        
+        if (gameState.mode === 'solo-open') {
+            const diff = Math.floor((gameState.endTime - gameState.startTime) / 1000);
+            const m = Math.floor(diff / 60);
+            const s = diff % 60;
+            detailText = `Time Taken: ${m}m ${s}s`;
+        } else if (gameState.mode === 'solo-memory') {
+            detailText = `Total Attempts: ${gameState.attempts}`;
+        }
+        
+        document.getElementById('final-cert-name').innerText = name;
+        document.getElementById('cert-action-text').innerText = actionText;
+        document.getElementById('cert-details').innerText = detailText;
+        document.getElementById('cert-date').innerText = new Date().toLocaleDateString();
+
+        const skillsList = getSelectedSkills().map(s => getSkillDisplayName(s)).join(', ');
+        document.getElementById('cert-skills').innerText = `Skills: ${skillsList}`;
+        
+        document.getElementById('modal-overlay').classList.add('hidden');
+        document.getElementById('game-controls').classList.add('hidden');
+        document.getElementById('board').classList.add('hidden');
+        document.getElementById('certificate-view').classList.remove('hidden');
+        document.getElementById('cert-buttons-container').classList.remove('hidden');
+        document.getElementById('nugget-speech').innerText = "Congratulations!";
+    }
+
+    // --- Teacher Printing ---
+    function printCardSet() {
+        const selectedSkills = getSelectedSkills();
+        if(selectedSkills.length === 0) { alert("Select at least one skill."); return; }
+
+        const container = document.getElementById('print-layout');
+        container.innerHTML = '';
+        
+        const data = generateDeckData().sort(() => 0.5 - Math.random());
+        
+        const p1 = document.createElement('div'); p1.className = 'print-page';
+        data.forEach(cardData => {
+            const wrap = document.createElement('div'); wrap.className = 'print-card';
+            const face = document.createElement('div'); face.className = 'card-face card-front';
+            face.innerHTML = `<div class="card-content">${cardData.val}</div>`;
+            wrap.appendChild(face);
+            p1.appendChild(wrap);
+        });
+        
+        const p2 = document.createElement('div'); p2.className = 'print-page';
+        data.forEach(cardData => {
+             const wrap = document.createElement('div'); wrap.className = 'print-card';
+             const face = document.createElement('div'); face.className = 'card-face card-back';
+             face.innerHTML = `<img src="Nugget.png">`;
+             wrap.appendChild(face);
+             p2.appendChild(wrap);
+        });
+        
+        container.appendChild(p1);
+        container.appendChild(p2);
+        
+        container.classList.add('visible-print');
+        window.print();
+        setTimeout(() => container.classList.remove('visible-print'), 1000);
+    }
+</script>
+</body>
+</html>
