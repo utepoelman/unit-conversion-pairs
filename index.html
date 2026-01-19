@@ -164,14 +164,15 @@
         /* --- Game Board --- */
         #board {
             display: grid; 
-            /* 6 columns x 4 rows = 24 cards */
+            /* Default: 6 columns x 4 rows = 24 cards */
             grid-template-columns: repeat(6, 1fr); 
             gap: 12px;
             perspective: 1000px; margin-bottom: 40px;
             max-width: 1000px;
         }
-        @media (max-width: 900px) { #board { grid-template-columns: repeat(4, 1fr); } } /* 4x6 */
-        @media (max-width: 500px) { #board { grid-template-columns: repeat(3, 1fr); } } /* 3x8 */
+        /* Media queries for responsiveness */
+        @media (max-width: 900px) { #board { grid-template-columns: repeat(4, 1fr); } } 
+        @media (max-width: 500px) { #board { grid-template-columns: repeat(3, 1fr); } } 
 
         .card {
             background-color: transparent; width: 120px; height: 120px; 
@@ -205,6 +206,7 @@
             justify-content: center;
             flex-wrap: wrap;
             line-height: 1.2;
+            width: 100%;
         }
 
         sup { font-size: 0.6em; vertical-align: baseline; position: relative; top: -0.4em; }
@@ -298,6 +300,7 @@
                 </div>
                 
                 <div class="skills-grid" id="skills-container">
+                    <label><input type="checkbox" value="prefixes"> Metric Prefixes (kilo, nano, etc)</label>
                     <label><input type="checkbox" value="length" checked> Length (km, m, cm, mm)</label>
                     <label><input type="checkbox" value="mass" checked> Mass (t, kg, g, mg)</label>
                     <label><input type="checkbox" value="time" checked> Time (Years, Days, Hours, etc)</label>
@@ -439,6 +442,7 @@
     
     function getSkillDisplayName(code) {
         const map = {
+            'prefixes': 'Prefixes',
             'length': 'Length',
             'mass': 'Mass',
             'time': 'Time',
@@ -451,28 +455,42 @@
 
     // --- Unit Generators ---
 
+    // 0. Prefixes (Finite Set)
+    const prefixPairs = [
+        { q: 'kilo-', a: '1 thousand' },
+        { q: 'mega-', a: '1 million' },
+        { q: 'giga-', a: '1 billion' },
+        { q: 'tera-', a: '1 trillion' },
+        { q: 'centi-', a: '1 hundredth' },
+        { q: 'milli-', a: '1 thousandth' },
+        { q: 'micro-', a: '1 millionth' },
+        { q: 'nano-', a: '1 billionth' }
+    ];
+
+    function genPrefix() {
+        // Returns a random pair from the set
+        const pair = prefixPairs[getRandomInt(0, prefixPairs.length - 1)];
+        return { q: pair.q, a: pair.a };
+    }
+
     // 1. Length: km, m, cm, mm
     function genLength() {
         // Pairs: km-m, m-cm, cm-mm, m-mm
         const type = getRandomInt(1, 4);
-        let val, u1, u2;
+        let val;
         
         switch(type) {
             case 1: // km -> m (x1000)
                 val = getRandomInt(1, 20) / 2; // 0.5 to 10
-                u1 = "km"; u2 = "m";
                 return { q: `${val} km`, a: `${fmtNum(val * 1000)} m` };
             case 2: // m -> cm (x100)
                 val = getRandomInt(1, 100) / 10; // 0.1 to 10
-                u1 = "m"; u2 = "cm";
                 return { q: `${val} m`, a: `${fmtNum(val * 100)} cm` };
             case 3: // cm -> mm (x10)
                 val = getRandomInt(1, 50);
-                u1 = "cm"; u2 = "mm";
                 return { q: `${val} cm`, a: `${val * 10} mm` };
             case 4: // m -> mm (x1000)
                 val = getRandomInt(1, 5);
-                u1 = "m"; u2 = "mm";
                 return { q: `${val} m`, a: `${fmtNum(val * 1000)} mm` };
         }
     }
@@ -516,11 +534,9 @@
             case 5: // Minutes -> Seconds (x60)
                 val = getRandomInt(2, 10);
                 return { q: `${val} minutes`, a: `${val * 60} seconds` };
-            case 6: // Years -> Weeks (approx 52)
-                // Specific cases to avoid ambiguity
-                return { q: "2 years", a: "104 weeks" }; // Simpler for kids
+            case 6: // Years -> Weeks
+                return { q: "2 years", a: "104 weeks" };
         }
-        // Fallback
         return { q: "1 year", a: "12 months" };
     }
 
@@ -530,9 +546,8 @@
         let val;
         
         switch(type) {
-            case 1: // km2 -> ha (x100) or m2 (x1000000)
+            case 1: // km2 -> ha (x100)
                 val = getRandomInt(1, 10);
-                // 1 km2 = 100 hectares
                 return { q: `${val} km<sup>2</sup>`, a: `${val * 100} hectares` };
             case 2: // m2 -> cm2 (x10000)
                 val = getRandomInt(1, 5);
@@ -555,7 +570,7 @@
             case 2: // m3 -> L (x1000)
                 val = getRandomInt(1, 10);
                 return { q: `${val} m<sup>3</sup>`, a: `${fmtNum(val * 1000)} litres` };
-            case 3: // cm3 -> mL (1:1) - kinda easy, but valid
+            case 3: // cm3 -> mL (1:1)
                 val = getRandomInt(50, 500);
                 return { q: `${val} cm<sup>3</sup>`, a: `${val} mL` };
             case 4: // L -> cm3 (x1000)
@@ -571,29 +586,21 @@
         
         switch(type) {
             case 1: // m/s -> km/h (x3.6)
-                // Pick multiples of 5 or 10 for clean numbers
                 val = getRandomInt(1, 10) * 5; 
                 res = val * 3.6; 
                 return { q: `${val} m/s`, a: `${res} km/h` };
-            
             case 2: // km/h -> m/s (/3.6)
-                // Pick multiples of 3.6 to get integers? 36, 72, 18, 90, 108
                 const bases = [18, 36, 54, 72, 90, 108];
                 val = bases[getRandomInt(0, bases.length-1)];
                 res = val / 3.6;
                 return { q: `${val} km/h`, a: `${res} m/s` };
-                
-            case 3: // Density: g/cm3 -> kg/m3 (x1000)
+            case 3: // Density
                 val = getRandomInt(1, 10);
                 return { q: `${val} g/cm<sup>3</sup>`, a: `${fmtNum(val * 1000)} kg/m<sup>3</sup>` };
-                
-            case 4: // Flow: L/s -> m3/h
-                // 1 L/s = 3.6 m3/h
+            case 4: // Flow
                 val = getRandomInt(1, 10);
-                res = val * 3.6; // Clean decimal usually
-                // Use formatted output
-                let sRes = parseFloat(res.toPrecision(10));
-                return { q: `${val} litres/s`, a: `${sRes} m<sup>3</sup>/hour` };
+                res = parseFloat((val * 3.6).toPrecision(10));
+                return { q: `${val} litres/s`, a: `${res} m<sup>3</sup>/hour` };
         }
     }
 
@@ -602,17 +609,29 @@
     function generateDeckData() {
         const skills = getSelectedSkills();
         let deck = [];
-        // STRICT UNIQUENESS: Track every visual face string generated so far.
         let usedCardFaces = new Set();
         let safetyCounter = 0;
-        
+
+        // SPECIAL CASE: If ONLY "prefixes" is selected
+        if (skills.length === 1 && skills[0] === 'prefixes') {
+            // Return exactly the 8 predefined pairs
+            prefixPairs.forEach((pair, index) => {
+                const id = index + 1;
+                deck.push({ id: id, type: 'q', val: pair.q, pairId: id });
+                deck.push({ id: id, type: 'a', val: pair.a, pairId: id });
+            });
+            return deck;
+        }
+
+        // STANDARD MODE: Mixed topics (Target 12 pairs / 24 cards)
         while(deck.length < 24 && safetyCounter < 5000) {
             safetyCounter++;
             const skill = skills[getRandomInt(0, skills.length-1)];
             let data = null;
 
-            // Generate Pair
-            if (skill === 'length') data = genLength();
+            // Generator Dispatcher
+            if (skill === 'prefixes') data = genPrefix();
+            else if (skill === 'length') data = genLength();
             else if (skill === 'mass') data = genMass();
             else if (skill === 'time') data = genTime();
             else if (skill === 'area') data = genArea();
@@ -710,7 +729,20 @@
         }
 
         const deckData = generateDeckData().sort(() => 0.5 - Math.random());
+        gameState.totalPairs = deckData.length / 2;
+
+        // GRID ADJUSTMENT for standard (24 cards) vs prefix-only (16 cards)
         const board = document.getElementById('board');
+        if (deckData.length === 16) {
+            // 4x4 grid for 16 cards
+            board.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            board.style.maxWidth = '600px'; 
+        } else {
+            // Default responsiveness for 24 cards
+            board.style.gridTemplateColumns = ''; 
+            board.style.maxWidth = ''; 
+        }
+
         board.innerHTML = '';
         deckData.forEach(data => board.appendChild(createCard(data)));
     }
@@ -752,20 +784,16 @@
     function handleCardClick(card) {
         if (gameState.isProcessing || card.classList.contains('matched')) return;
 
-        // FIX: Handle Open Mode Deselection
         if (gameState.mode === 'solo-open') {
             if (card.classList.contains('selected')) {
-                // Deselect behavior
                 card.classList.remove('selected');
-                selectedCards = []; // Clear selection
+                selectedCards = [];
                 return;
             }
         } else {
-            // Memory modes: ignore if already flipped
             if (card.classList.contains('flipped')) return;
         }
 
-        // Selection Logic
         if (gameState.mode !== 'solo-open') {
             card.classList.add('flipped');
         } else {
